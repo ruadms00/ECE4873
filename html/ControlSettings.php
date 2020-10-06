@@ -1,3 +1,7 @@
+<?php
+   include('session.php');
+?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -136,25 +140,18 @@
   <body>
 
 <div class="sidebar">
-  <a class="active" href="#users">Add Music</a>
-  <a href="#users">Users</a>
-  <a href="#queue">Queue</a>
-  <a href="#settings">Settings</a>
+  <a href="ControlAdd.php">Add Music</a>
+  <a href="ControlUsers.php">Users</a>
+  <a href="ControlQueue.php">Queue</a>
+  <a class="active">Settings</a>
 </div>
 <div class="content">
   <h1>
-  BOOMBOX OWNER
+  SETTINGS
     </h1>
-<form action="/action_page.php" method="post">
+<form action="" method="post">
   <div class="left">
-    <label for="uname"><b>Device</b></label>
-    <input type="text" placeholder="Enter Device ID" name="uname" required>
-    
-    <button type="submit">Connect</button>
-    <label>
-      <input type="checkbox" checked="checked" name="remember"> Connect Automatically
-    </label>
-    <button type="button" class="cancelbtn">Return</button>
+    <button type="button" class="cancelbtn">Logout</button>
   </div>
   <div class="right">
  <label>

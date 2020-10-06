@@ -1,3 +1,7 @@
+<?php
+   include('session.php');
+?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -8,21 +12,21 @@
     <style type="text/css">
     <!--
     body {
+  	margin: 0;
       color:#0080FF;
       font-family: 'Strait';font-size: 22px;
       background-color:#4B4B4B;
-      background-image:url('Background Image');
-      background-repeat:no-repeat;
     }
     a  { color:#0000FF; }
-    a:visited { color:#800080; }
-    a:hover { color:#008000; }
-    a:active { color:#FF0000; }
 
 	h1 {
+	width:100%;
+	   margin:10px;
 	   text-align: center;
+	   float:right;
 	}
 	
+
   input[type=text], input[type=password] {
     width: 100%;
     padding: 12px 20px;
@@ -45,6 +49,42 @@
   button:hover {
     opacity: 0.8;
   }
+ 
+ div.content {
+  margin-left: 200px;
+  padding: 1px 16px;
+  height: 1000px;
+} 
+  
+.sidebar {
+  margin: 0;
+  padding: 0;
+  width: 200px;
+  background-color: #f1f1f1;
+  position: fixed;
+  height: 100%;
+  overflow: auto;
+  float:left;
+}
+
+
+.sidebar a {
+  display: block;
+  color: black;
+  padding: 16px;
+  text-decoration: none;
+}
+ 
+.sidebar a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.sidebar a:hover:not(.active) {
+  background-color: #555;
+  color: white;
+}
+
   
   .cancelbtn {
     width: auto;
@@ -55,19 +95,14 @@
   
   .left {
     padding: 16px;
-	width:50%;
 	float:left;
+	width:50%;
   }
   
   .right {
     padding: 16px;
-	margin-left:50%;
   }
   
-  span.psw {
-    float: right;
-    padding-top: 16px;
-  }
   
   /* Change styles for span and cancel button on extra small screens */
   @media screen and (max-width: 300px) {
@@ -79,6 +114,23 @@
        width: 100%;
     }
   }
+  
+@media screen and (max-width: 700px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidebar a {float: left;}
+  div.content {margin-left: 0;}
+}
+
+@media screen and (max-width: 400px) {
+  .sidebar a {
+    text-align: center;
+    float: none;
+  }
+}
     -->
     </style>
     <!--[if IE]>
@@ -86,26 +138,20 @@
     <![endif]-->
   </head>
   <body>
-  <header>
+
+<div class="sidebar">
+  <a href="ControlAdd.php">Add Music</a>
+  <a class="active">Users</a>
+  <a href="ControlQueue.php">Queue</a>
+  <a href="ControlSettings.php">Settings</a>
+</div>
+<div class="content">
   <h1>
-  BOOMBOX OWNER
+  USERS
     </h1>
-  </header>
-  
-<form action="/action_page.php" method="post">
-
+<form action="" method="post">
   <div class="left">
-    <label for="dname"><b>Device</b></label>
-    <input type="text" placeholder="Enter Device ID" name="devid" required>
-    
-    <label for="pw"><b>Password</b></label>
-    <input type="text" placeholder="Enter Password" name="pw" required>
-
-    <button type="submit">Connect</button>
-    <label>
-      <input type="checkbox" checked="checked" name="rem"> Connect Automatically
-    </label>
-    <a href="index.html"><button type="button" class="cancelbtn">Return</button></a>
+    <button type="button" class="cancelbtn">Logout</button>
   </div>
   <div class="right">
  <label>
@@ -113,6 +159,6 @@
  </label>
   </div>
 </form>
-
+	   </div>
   </body>
 </html>
