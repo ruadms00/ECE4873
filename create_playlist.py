@@ -89,6 +89,27 @@ class CreatePlaylist:
         song = self.get_spotify_uri(song_name, artist)
         print(song_name + " + "+ artist)
         return song 
+    
+    # read a file for 'remove song'
+    def get_txt_songs_2(self):
+    # "grab the songs in txt files."
+        file = open("/Users/kyeomeunjang/Desktop/Spotify/remove.txt", "r+")  
+        lines = file.readlines()
+        firstline = lines[0]
+        del lines[0]
+        file.close()
+        file = open("/Users/kyeomeunjang/Desktop/Spotify/remove.txt", "w+")  
+        for line in lines:
+            file.write(line)
+        file.close()
+        
+        data = firstline.split(" - ")
+        song_name = data[0]
+        artist = data[1]
+
+        song = self.get_spotify_uri(song_name, artist)
+        print(song_name + " + "+ artist)
+        return song 
        
     def add_song_to_playlist(self):
         song = self.get_txt_songs()
@@ -103,6 +124,23 @@ class CreatePlaylist:
             }
         )
         print("added song is " + song[0])
+        print(response.json)
+    
+    def remove_song_from_playlist(self):
+        song_2 = self.get_txt_songs_2()
+        query = "https://api.spotify.com/v1/playlists/{}/tracks".format(
+            self.playlist_id)
+        request_body = json.dumps(
+            { "tracks": [{"uri": "{}".format(song_2)}]})
+        response = requests.delete(
+            query,
+            data=request_body,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }
+        )
+        print("removed song is " )
         print(response.json)
         
     def call_refresh(self):
@@ -121,20 +159,23 @@ class CreatePlaylist:
         )
         response_json = response.json()
         print(response_json["devices"])
-        
-    def play(self, playlist_uri):
-        query = "https://api.spotify.com/v1/me/player/play"
-        request_body = json.dumps({"context_uri": "{}".format(playlist_uri)})
-        response = requests.put(query, data=request_body,
+    def get_song_info(self):
+        query = "https://api.spotify.com/v1/me/player/currently-playing"
+        response = requests.get(
+            query,
             headers={
-                "Accept": "application/json",
+                "Content-Type": "application/json",
                 "Authorization": "Bearer {}".format(self.spotify_token)
-
             }  
         )
-        print("response from actions_song")
-        print(response.json)
-            
+        response_json = response.json() 
+        # Album 
+        print(response_json["item"]["name"])
+        # Artist
+        artist_info = response_json["item"]["artists"]
+        print(artist_info[0]["name"])
+        # print(response.json())
+                
 if __name__ == '__main__':
     cp = CreatePlaylist()
     cp.call_refresh()
@@ -159,6 +200,11 @@ if __name__ == '__main__':
             elif(status == 'pause'): a_song.pause()
             elif(status == 'next'): a_song.skip_to_nextSong()
             elif(status == 'prev'): a_song.skip_to_prevSong()
+            elif(status == 'remove'): cp.remove_song_from_playlist()
+            elif(status == 'info'): cp.get_song_info()
+            elif(status == 'shuffle_on'): a_song.play_shuffle("true")
+            elif(status == 'shuffle_off'): a_song.play_shuffle("false")
+            
                 # cp.playlist_id = id
 
                 # playlist_uri = cp.get_playlist_uri()

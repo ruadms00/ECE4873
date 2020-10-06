@@ -63,3 +63,15 @@ class Action:
         )
         print("response from skip_to_prevSong")
         print(response.json)
+        
+    def play_shuffle(self, bool):
+        query = "https://api.spotify.com/v1/me/player/shuffle?state={}".format(
+            bool)
+        response = requests.put(query,
+            headers={
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        print("play_shuffle")
+        print(response.json)
+        
