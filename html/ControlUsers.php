@@ -6,13 +6,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-<<<<<<< HEAD
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
       
-=======
->>>>>>> ed55c2bd3e0a28ba6416068eb1778d03d36c1754
     <title>Boombox</title>
     
     <link href='https://fonts.googleapis.com/css?family=Strait' rel='stylesheet'>
@@ -46,28 +43,17 @@
   button {
     background-color: #4CAF50;
     color: white;
-<<<<<<< HEAD
     padding: 20px;
-=======
-    padding: 14px 20px;
->>>>>>> ed55c2bd3e0a28ba6416068eb1778d03d36c1754
     margin: 8px 0;
     border: none;
     cursor: pointer;
     width: 100%;
   }
   
-<<<<<<< HEAD
   .button:hover {
     opacity: 0.8;
   }
 
-=======
-  button:hover {
-    opacity: 0.8;
-  }
- 
->>>>>>> ed55c2bd3e0a28ba6416068eb1778d03d36c1754
  div.content {
   margin-left: 200px;
   padding: 1px 16px;
@@ -104,7 +90,6 @@
 }
 
   
-<<<<<<< HEAD
 .cancelbtn {
 width: auto;
 padding: 10px 20px;
@@ -157,26 +142,6 @@ cursor: pointer;
 height: 400px;
 width: 50%;
 }      
-=======
-  .cancelbtn {
-    width: auto;
-    padding: 10px 20px;
-    background-color: #f44336;
-	float:right;
-  }
-  
-  .left {
-    padding: 16px;
-	float:left;
-	width:50%;
-  }
-  
-  .right {
-    padding: 16px;
-  }
-  
-  
->>>>>>> ed55c2bd3e0a28ba6416068eb1778d03d36c1754
   /* Change styles for span and cancel button on extra small screens */
   @media screen and (max-width: 300px) {
     span.psw {
@@ -211,11 +176,7 @@ width: 50%;
     <![endif]-->
   </head>
   <body>
-<<<<<<< HEAD
  
-=======
-
->>>>>>> ed55c2bd3e0a28ba6416068eb1778d03d36c1754
 <div class="sidebar">
   <a href="ControlAdd.php">Add Music</a>
   <a class="active">Users</a>
@@ -225,7 +186,6 @@ width: 50%;
 <div class="content">
   <h1>
   USERS
-<<<<<<< HEAD
   <button type="button" class="cancelbtn">Logout</button>
     </h1>
 <form action="" method="post">
@@ -242,19 +202,8 @@ width: 50%;
     </div>
 </div>
     
-=======
-    </h1>
-<form action="" method="post">
-  <div class="left">
-    <button type="button" class="cancelbtn">Logout</button>
-  </div>
-  <div class="right">
- <label>
- OR SCAN QR CODE HERE
- </label>
-  </div>
->>>>>>> ed55c2bd3e0a28ba6416068eb1778d03d36c1754
 </form>
 	   </div>
   </body>
 </html>
+
