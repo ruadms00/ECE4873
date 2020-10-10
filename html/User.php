@@ -95,7 +95,22 @@
 <form action="/action_page.php" method="post">
 
   <div class="left">
-    <a href="logout.php"><button type="button" class="cancelbtn">Logout</button></a>
+    <label for="uname"><b>Device</b></label>
+    <input type="text" placeholder="Enter Device ID" name="uname" required>
+    
+    <label for="uname"><b>Username</b></label>
+    <input type="text" placeholder="Enter Username" name="uname" required>
+	
+    <button type="submit">Connect</button>
+    <label>
+      <input type="checkbox" checked="checked" name="remember"> Connect Automatically
+    </label>
+    <a href="index.html"><button type="button" class="cancelbtn">Return</button></a>
+  </div>
+  <div class="right">
+ <label>
+ OR SCAN QR CODE HERE
+ </label>
   </div>
 </form>
 
