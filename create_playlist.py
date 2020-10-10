@@ -204,10 +204,3 @@ if __name__ == '__main__':
             elif(status == 'info'): cp.get_song_info()
             elif(status == 'shuffle_on'): a_song.play_shuffle("true")
             elif(status == 'shuffle_off'): a_song.play_shuffle("false")
-            
-                # cp.playlist_id = id
-
-                # playlist_uri = cp.get_playlist_uri()
-        
-    
-        # openfile = 0

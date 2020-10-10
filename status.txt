@@ -1,1 +1,1 @@
-shuffle_off
+start
