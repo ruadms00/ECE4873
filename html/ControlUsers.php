@@ -1,3 +1,7 @@
+<?php
+   include('session.php');
+?>
+
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -183,7 +187,6 @@ width: 40%;
     <button type="button" class="cancelbtn">Logout</button>
 </form>
     </h1>
-<form action="" method="post">
 <div class = "rect">
     <img src="https://i.scdn.co/image/966ade7a8c43b72faa53822b74a899c675aaafee" alt="image" style="padding-left:5%;width:90%;height:75%;margin-bottom:0%;">
     <div class = "btn-group" style = "width:100%; margin-bottom:0%"> 
@@ -196,9 +199,8 @@ width: 40%;
 
     </div>
 </div>
-    
-</form>
-	   </div>
-  </body>
+
+</div>
+</body>
 </html>
 
