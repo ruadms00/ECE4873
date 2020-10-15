@@ -9,17 +9,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-      
-    <title>Boombox</title>
-    
+
     <link href='https://fonts.googleapis.com/css?family=Strait' rel='stylesheet'>
     <style type="text/css">
     <!--
     body {
   	margin: 0;
-      color:#0080FF;
+      color:#f0f0f0;
       font-family: 'Strait';font-size: 22px;
-      background-color:#4B4B4B;
+      background-color:#191919;
     }
     a  { color:#0000FF; }
 
@@ -108,7 +106,7 @@ padding: 16px;
 }
 
 .btn-group button {
-background-color: #2B2D2F; /* Green background */
+background-color: #262626; /* Green background */
 color: white; /* White text */
 cursor: pointer; /* Pointer/hand icon */
 float: left; /* Float the buttons side by side */
@@ -125,22 +123,22 @@ border-right: none; /* Prevent double borders */
 
 /* Add a background color on hover */
 .btn-group button:hover:not(.active) {
-  background-color: #555;
+  background-color: #323232;
   color: white;
 }
 .btn-group button:hover:active {
-  background-color: #2B2D2F;
+  background-color: #262626;
   color: white;
 }
 .rect {
-background-color: #2B2D2F;
+background-color: #262626;
 color: white;
-padding: 10px ;
+padding: 15px ;
 margin: 15% 25%;
 border: 2px solid black;
 cursor: pointer;
 height: 400px;
-width: 50%;
+width: 40%;
 }      
   /* Change styles for span and cancel button on extra small screens */
   @media screen and (max-width: 300px) {
@@ -185,19 +183,21 @@ width: 50%;
 </div>
 <div class="content">
   <h1>
-  USERS
-  <button type="button" class="cancelbtn">Logout</button>
+<form action="" method="post">
+    USERS
+    <button type="button" class="cancelbtn">Logout</button>
+</form>
     </h1>
 <form action="" method="post">
-<div class = "rect" style = "width:50%">
-    <img src="https://i.scdn.co/image/966ade7a8c43b72faa53822b74a899c675aaafee" alt="image" style="padding-left:5%;width:90%;height:330px;">
-    <div class = "btn-group" style = "width:100%"> 
+<div class = "rect">
+    <img src="https://i.scdn.co/image/966ade7a8c43b72faa53822b74a899c675aaafee" alt="image" style="padding-left:5%;width:90%;height:75%;margin-bottom:0%;">
+    <div class = "btn-group" style = "width:100%; margin-bottom:0%"> 
      
-        <button type="button" style="width:20%"><i class="material-icons">skip_previous</i></button>
-        <button type="button" style="width:20%"><i class="material-icons">pause</i></button>
-        <button type="button" style="width:20%"><i class="material-icons">play_arrow</i></button>
-        <button type="button" style="width:20%"><i class="material-icons">shuffle</i></button>
-        <button type="button" style="width:20%"><i class="material-icons">skip_next</i></button>
+        <button type="button" style="width:20%; "><i class="material-icons">skip_previous</i></button>
+        <button type="button" style="width:20%; "><i class="material-icons">pause</i></button>
+        <button type="button" style="width:20%;"><i class="material-icons">play_arrow</i></button>
+        <button type="button" style="width:20%;"><i class="material-icons">shuffle</i></button>
+        <button type="button" style="width:20%;"><i class="material-icons">skip_next</i></button>
 
     </div>
 </div>
