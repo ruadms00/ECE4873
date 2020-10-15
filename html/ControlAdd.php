@@ -2,7 +2,6 @@
    include('session.php');
 ?>
 
-<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -13,9 +12,9 @@
     <!--
     body {
   	margin: 0;
-      color:#0080FF;
+      color:#f0f0f0;
       font-family: 'Strait';font-size: 22px;
-      background-color:#4B4B4B;
+      background-color:#191919;
     }
     a  { color:#0000FF; }
 
@@ -45,11 +44,13 @@
     cursor: pointer;
     width: 100%;
   }
+        
+
   
   button:hover {
     opacity: 0.8;
   }
- 
+        
  div.content {
   margin-left: 200px;
   padding: 1px 16px;
@@ -103,7 +104,17 @@
     padding: 16px;
   }
   
-  
+.rect {
+    background-color: #262626;
+    color: white;
+    padding: 15px ;
+    margin-left: 25%;
+    margin-top: 25%;
+    border: 2px solid black;
+    cursor: pointer;
+    height: 300px;
+    width: 40%;
+}    
   /* Change styles for span and cancel button on extra small screens */
   @media screen and (max-width: 300px) {
     span.psw {
@@ -146,19 +157,28 @@
   <a href="ControlSettings.php">Settings</a>
 </div>
 <div class="content">
-  <h1>
-  WELCOME <?php echo strtoupper($user_id); ?>
-    </h1>
-<form action="" method="post">
-  <div class="left">
-    <button type="button" class="cancelbtn">Logout</button>
-  </div>
-  <div class="right">
- <label>
- OR SCAN QR CODE HERE
- </label>
-  </div>
+    <h1>
+    <form action="" method="post">
+    ADD MUSIC <?php echo strtoupper($user_id); ?>
+    <a href="logout.php"><button type="button" class="cancelbtn">Logout</button></a>
 </form>
-	   </div>
+    </h1>
+    <form action="" method="post"></form>
+    <div class = "rect" style = "margin-top: 10%;" >    
+        
+        <div  >
+            <label>Song</label>
+            <input type="text">
+        </div>
+        <div >
+            <label>Artist</label>
+            <input type="text">
+        </div>
+        <div>
+            <button type = "button" style = "width:45%; font-size: 15px">Add</button>
+            <button type = "button" style = "width:45%;margin-left:5%; font-size: 15px">Remove</button>
+        </div>
+    </div>
+</div>
   </body>
 </html>
