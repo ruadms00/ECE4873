@@ -3,8 +3,7 @@ import json
 playlist_uri = ""
 class Action:
 
-    def __init__(self, id, uri, token):
-        self.playlist_id = id
+    def __init__(self, uri, token):
         self.playlist_uri = uri
         self.spotify_token = token
 
@@ -37,11 +36,10 @@ class Action:
             query,
             headers={
                 "Authorization": "Bearer {}".format(self.spotify_token)
-
             }  
         )
-        print("response from actions_song 222222")
-        print(response.json)
+        #print("response from actions_song 2")
+        #print(response.json)
         
     def pause(self):
         query = "https://api.spotify.com/v1/me/player/pause"
@@ -51,8 +49,8 @@ class Action:
                 "Authorization": "Bearer {}".format(self.spotify_token)
             }  
         )
-        print("response from actions_song")
-        print(response.json)
+        #print("response from actions_song")
+        #print(response.json)
         
     def skip_to_nextSong(self):
         query = "https://api.spotify.com/v1/me/player/next"
@@ -61,8 +59,8 @@ class Action:
                 "Authorization": "Bearer {}".format(self.spotify_token)
             }  
         )
-        print("response from skip_to_nextSong")
-        print(response.json)
+        #print("response from skip_to_nextSong")
+        #print(response.json)
         
     def skip_to_prevSong(self):
         query = "https://api.spotify.com/v1/me/player/previous"
@@ -71,8 +69,8 @@ class Action:
                 "Authorization": "Bearer {}".format(self.spotify_token)
             }  
         )
-        print("response from skip_to_prevSong")
-        print(response.json)
+        #print("response from skip_to_prevSong")
+        #print(response.json)
         
     def play_shuffle(self, bool):
         query = "https://api.spotify.com/v1/me/player/shuffle?state={}".format(
@@ -82,8 +80,8 @@ class Action:
                 "Authorization": "Bearer {}".format(self.spotify_token)
             }  
         )
-        print("play_shuffle")
-        print(response.json)
+        #print("play_shuffle")
+        #print(response.json)
         
     def play_repeat(self):
         query = "https://api.spotify.com/v1/me/player/repeat?state=context"
@@ -92,7 +90,7 @@ class Action:
                 "Authorization": "Bearer {}".format(self.spotify_token)
             }  
         )
-        print("play_in_playlist")
+        #print("play_in_playlist")
         #print(response.json())
         
         

@@ -1,6 +1,6 @@
-from secrets import refresh_token, base_64
 import requests
 import json
+from secrets import refresh_token, base_64
 
 class Refresh:
 
@@ -21,5 +21,3 @@ class Refresh:
 
         return response_json["access_token"]
 
-a = Refresh()
-a.refresh()
