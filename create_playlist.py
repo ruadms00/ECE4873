@@ -2,7 +2,7 @@ import json
 import requests
 import time
 import threading
-from action_song import Action
+from SpotifyAction import Spotify
 from refresh import Refresh
 from LCDControl import LCD
 from secrets import spotify_token, spotify_user_id
@@ -21,53 +21,8 @@ class SpotifyManager:
         self.playlist_uri = ""
         self.playlist_id = ""
         self.spotify_token = Refresh().refresh()
-        self.control_start_playlist()
         print("starting")
 
-    def control_start_playlist(self):
-        try:
-            query = "https://api.spotify.com/v1/users/{}/playlists".format(spotify_user_id)
-            response = requests.get(
-                query,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer {}".format(self.spotify_token)
-                }
-            )
-            response = response.json()["items"]
-            exists = False
-            for v in response:
-                if v["name"] == "Boombox Playlist":
-                    exists = True
-                    self.playlist_id = v["id"]
-                    self.playlist_uri= v["uri"]
-            if not exists:
-                self.create_playlist()
-        except:
-            self.create_playlist()
-    
-    def get_status(self):
-        #print("get_status")
-        file = open("/home/pi/Desktop/Spotify/ECE4873/status.txt", "r+")  
-        read = file.readline()
-        file.close()
-        return read
-    
-    def create_playlist(self):
-        # Create a new playlist
-        print("Trying to create playlist...")
-        query = "https://api.spotify.com/v1/users/{}/playlists".format(spotify_user_id)
-        
-        request_body = json.dumps({
-            "name": "Boombox Playlist", "description": "Songs from SMS", "public": True
-        })
-        response = requests.post(query, data=request_body, headers={
-            "Content-Type": "application/json",
-            "Authorization": "Bearer {}".format(self.spotify_token)
-        })
-        response_json = response.json()
-        self.playlist_id = response_json["id"]
-        self.playlist_uri = response_json["uri"]
     
 
     def get_spotify_uri(self, song_name, artist):
@@ -91,53 +46,7 @@ class SpotifyManager:
         return uri
     
     # read a file for 'remove song'
-    def get_txt_songs_2(self, firstline):
-   
-        data = firstline.split("-")
-        song_name = data[0]
-        artist = data[1]
-
-        song = self.get_spotify_uri(song_name, artist)
-        #print(song)
-        if(song == []): song = "cannot find song"
-        else: print(song_name + " + "+ artist)
-        return song 
-       
-    def add_song_to_playlist(self, firstline):
-        print('add_song_to_playlist')
-        song = self.get_txt_songs(firstline)
-        print(song)
-        if(song == "cannot find song"):return
-        query = "https://api.spotify.com/v1/playlists/{}/tracks?uris={}".format(
-            self.playlist_id, song)
-        response = requests.post(
-            query,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer {}".format(self.spotify_token)
-            }
-        )
-        #print("added song is " + song[0])
-        #print(response.json)
     
-    def remove_song_from_playlist(self, firstline):
-        song_2 = self.get_txt_songs_2(firstline)
-        if(song_2 == "cannot find song"):return
-        query = "https://api.spotify.com/v1/playlists/{}/tracks".format(
-            self.playlist_id)
-        request_body = json.dumps(
-            { "tracks": [{"uri": "{}".format(song_2)}]})
-        response = requests.delete(
-            query,
-            data=request_body,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer {}".format(self.spotify_token)
-            }
-        )
-        #print("removed song is " )
-        #print(response.json)
-        
     def get_device(self):
         query = "https://api.spotify.com/v1/me/player/devices"
         response = requests.get(
