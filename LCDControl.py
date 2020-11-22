@@ -50,25 +50,26 @@ class LCD:
 
     def getData(self):
         cmd = 0
-        while not st.buffer_empty:
-            ts = st.touches
-            for point in ts:
-                # perform transformation to get into display coordinate system!
-                y = point["y"]
-                x = 4096 - point["x"]
-                x = 2 * x // 30
-                y = 8 * y // 90
-                print('x '+x)
-                print('y '+y)
-                if (y > 140 and y < 175):
-                    if (x > 45 and x < 85):
-                        cmd = 1
-                    elif (x > 110 and x < 150):
-                        cmd = 2
-                    elif (x > 170 and x < 210):
-                        cmd = 3
-                    elif (x > 235 and x < 275):
-                        cmd = 4
+        if self.st.touched:
+            while not self.st.buffer_empty:
+                ts = self.st.touches
+                for point in ts:
+                    # perform transformation to get into display coordinate system!
+                    y = point["y"]
+                    x = 4096 - point["x"]
+                    x = 2 * x // 30
+                    y = 8 * y // 90
+                    print('x '+x)
+                    print('y '+y)
+                    if (y > 140 and y < 175):
+                        if (x > 45 and x < 85):
+                            cmd = 1
+                        elif (x > 110 and x < 150):
+                            cmd = 2
+                        elif (x > 170 and x < 210):
+                            cmd = 3
+                        elif (x > 235 and x < 275):
+                            cmd = 4
         return cmd
 
     def drawAlbumArt(self):

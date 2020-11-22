@@ -20,14 +20,13 @@ spotify = Spotify()
 def updateLCDInfo():
     while True:
         global spotify
-        info = spotify.get_song_info()
-        if info and info['is_playing']:
-            if (info['item']['name'] != lcd.songName):
-                lcd.albumURL = info['item']['album']['images'][1]['url']
-                lcd.songName = info['item']['name']
+        song = spotify.getSongInfo()
+        if song and song['is_playing']:
+            if (song != lcd.songName):
+                lcd.albumURL = song['item']['album']['images'][1]['url']
+                lcd.songName = song['item']['name']
                 lcd.artist = info['item']['artists'][0]['name']
                 lcd.songLength = info['item']['duration_ms'] // 1000
-                #time.sleep(.05)
                 lcd.drawSongDetails()
             progress = info['progress_ms'] // 1000
             lcd.updateBar(progress/lcd.songLength)
