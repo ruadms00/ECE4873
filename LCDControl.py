@@ -2,6 +2,7 @@ import requests
 import json
 import digitalio
 import board
+import time
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from adafruit_stmpe610 import Adafruit_STMPE610_I2C
@@ -47,30 +48,35 @@ class LCD:
         self.drawSongDetails()
         self.drawButtons()
         self.drawBar(0)
+    
+    def clearData(self):
+        while not self.st.buffer_empty:
+            ts = self.st.touches
 
     def getData(self):
-        cmd = 0
+        self.clearData()
+        time.sleep(.01)
         if self.st.touched:
             while not self.st.buffer_empty:
                 ts = self.st.touches
                 for point in ts:
                     # perform transformation to get into display coordinate system!
-                    y = point["y"]
-                    x = 4096 - point["x"]
-                    x = 2 * x // 30
-                    y = 8 * y // 90
-                    print('x '+x)
-                    print('y '+y)
-                    if (y > 140 and y < 175):
-                        if (x > 45 and x < 85):
-                            cmd = 1
-                        elif (x > 110 and x < 150):
-                            cmd = 2
-                        elif (x > 170 and x < 210):
-                            cmd = 3
-                        elif (x > 235 and x < 275):
-                            cmd = 4
-        return cmd
+                    y1 = point["y"]
+                    x1 = 4096 - point["x"]
+                    x1 = 2 * x1 // 30
+                    y1 = 8 * y1 // 90
+                    x = y1
+                    y = x1
+                    if (y > 150 and y < 190):
+                        if (x > 70 and x < 115):
+                            return 1
+                        elif (x > 140 and x < 185):
+                            return 2
+                        elif (x > 210 and x < 250):
+                            return 3
+                        elif (x > 270 and x < 310):
+                            return 4
+        return 0
 
     def drawAlbumArt(self):
         img = 0

@@ -22,29 +22,34 @@ def updateLCDInfo():
         global spotify
         song = spotify.getSongInfo()
         if song and song['is_playing']:
-            if (song != lcd.songName):
+            if (song['item']['name'] != lcd.songName):
                 lcd.albumURL = song['item']['album']['images'][1]['url']
                 lcd.songName = song['item']['name']
-                lcd.artist = info['item']['artists'][0]['name']
-                lcd.songLength = info['item']['duration_ms'] // 1000
+                lcd.artist = song['item']['artists'][0]['name']
+                lcd.songLength = song['item']['duration_ms'] // 1000
                 lcd.drawSongDetails()
-            progress = info['progress_ms'] // 1000
+            progress = song['progress_ms'] // 1000
             lcd.updateBar(progress/lcd.songLength)
         time.sleep(.5) 
             
+
 if __name__ == '__main__':
     lcdThread = threading.Thread(target=updateLCDInfo)
     lcdThread.start()
     while True:
         cmd = lcd.getData()
         if cmd == 1:
-            spotify.prev()
+            spotify.prevSong()
+            time.sleep(1)
         elif cmd == 2:
             spotify.play()
+            time.sleep(1)
         elif cmd == 3:
             spotify.pause()
+            time.sleep(1)
         elif cmd == 4:
-            spotify.next()
+            spotify.nextSong()
+            time.sleep(1)
         time.sleep(.001)
     #data = s.recv(1024).decode()
     #print(data)
