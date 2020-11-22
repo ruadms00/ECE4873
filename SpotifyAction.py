@@ -42,6 +42,21 @@ class Spotify:
         )
         print(response)
 
+    def getSongInfo(self):
+        query = "https://api.spotify.com/v1/me/player/currently-playing"
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        variables = vars(response)
+        if(variables['status_code'] == 200):
+            return response.json()
+        elif(variables['status_code'] == 204):
+            return False
+
     def getArt(self):
         query = "https://api.spotify.com/v1/me/player/currently-playing"
         response = requests.get(
@@ -57,6 +72,21 @@ class Spotify:
         elif(variables['status_code'] == 204):
             return False
         
+    def isPlaying(self):
+        query = "https://api.spotify.com/v1/me/player/currently-playing"
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        variables = vars(response)
+        if(variables['status_code'] == 200):
+            return response.json()['is_playing']
+        elif(variables['status_code'] == 204):
+            return False
+        
     def getName(self):
         query = "https://api.spotify.com/v1/me/player/currently-playing"
         response = requests.get(
@@ -69,6 +99,36 @@ class Spotify:
         variables = vars(response)
         if(variables['status_code'] == 200):
             return response.json()['item']['name']
+        elif(variables['status_code'] == 204):
+            return False
+        
+    def getArtist(self):
+        query = "https://api.spotify.com/v1/me/player/currently-playing"
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        variables = vars(response)
+        if(variables['status_code'] == 200):
+            return response.json()['item']['artists'][0]['name']
+        elif(variables['status_code'] == 204):
+            return False
+    
+    def getLength(self):
+        query = "https://api.spotify.com/v1/me/player/currently-playing"
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        variables = vars(response)
+        if(variables['status_code'] == 200):
+            return response.json()['item']['duration_ms'] // 1000
         elif(variables['status_code'] == 204):
             return False
             
