@@ -13,128 +13,14 @@ offset_shuffle = 1
 queue = " "
 lcd = LCD()
 image = "sdf"
-
-class SpotifyManager:
-    def __init__(self):
-        self.user_id = spotify_user_id
-        self.tracks = ""
-        self.playlist_uri = ""
-        self.playlist_id = ""
-        self.spotify_token = Refresh().refresh()
-        print("starting")
-
     
-
-    def get_spotify_uri(self, song_name, artist):
-        query = "https://api.spotify.com/v1/search?query=track%3A{}+artist%3A{}&type=track&offset=0&limit=20".format(
-            song_name,
-            artist
-        )
-        response = requests.get(
-            query,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer {}".format(self.spotify_token)
-            }
-        )
-        response_json = response.json()
-        songs = response_json["tracks"]["items"]
-        if(songs == []): uri = []
-           
-        # only use the first song
-        else: uri = songs[0]["uri"]
-        return uri
-    
-    # read a file for 'remove song'
-    
-    def get_device(self):
-        query = "https://api.spotify.com/v1/me/player/devices"
-        response = requests.get(
-            query,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer {}".format(self.spotify_token)
-            }  
-        )
-        response_json = response.json()
-        
-        #print(response_json["devices"])
-    def get_song_info(self):
-        query = "https://api.spotify.com/v1/me/player/currently-playing"
-        response = requests.get(
-            query,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer {}".format(self.spotify_token)
-            }  
-        )
-        variables = vars(response)
-        #print(variables['status_code'])
-        #response_json = response.json()
-        if(variables['status_code'] == 200): return response.json()
-        elif(variables['status_code'] == 204): return False
-        #else: response_json = response.json()
-        
-        
-    def get_playlist_info(self):
-        query = "https://api.spotify.com/v1/playlists/{}/tracks".format(
-            self.playlist_id)
-        response = requests.get(
-            query,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer {}".format(self.spotify_token)
-            }  
-        )
-        response_json = response.json() 
-        # Album 
-        #print(response_json)
-        return(response_json)
-        
-    def get_playlist_item(self):
-        query = "https://api.spotify.com/v1/playlists/{}/tracks".format(
-            self.playlist_id)
-        response = requests.get(
-            query,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer {}".format(self.spotify_token)
-            }  
-        )
-        response_json = response.json() 
-        # Album
-        line = ""
-        for index in range(len(response_json['items'])):
-            song = response_json['items'][index]['track']['name']
-            artist = response_json['items'][index]['track']['album']['artists'][0]['name']
-            line += song + "-" + artist + "\n"
-        return line   
-            #print(response_json['items'][index]['track']['album']['name'])
-        #print(line)  
-    def find_location(self, firstline):
-        target = 0
-        song = self.get_txt_songs(firstline)
-        curr = self.get_song_info()
-        curr = curr['item']['uri']
-        response_json = self.get_playlist_info()
-       
-        for index in range(len(response_json['items'])):
-            all_song = response_json['items'][index]['track']['uri']
-            if(song == all_song): target = index + 1
-            if(curr == all_song): curr = index + 1
-        
-        output = str(target) + "/" + str(curr)
-        return output
-        #return line 
-        # print(response.json())
-         
 songLength = 0
-cp = SpotifyManager()
+spotify = Spotify()
 
 def updateLCDInfo():
     while True:
-        global cp
-        info = cp.get_song_info()
+        global spotify
+        info = spotify.get_song_info()
         if info and info['is_playing']:
             if (info['item']['name'] != lcd.songName):
                 lcd.albumURL = info['item']['album']['images'][1]['url']
@@ -145,11 +31,22 @@ def updateLCDInfo():
                 lcd.drawSongDetails()
             progress = info['progress_ms'] // 1000
             lcd.updateBar(progress/lcd.songLength)
-        time.sleep(.5)    
+        time.sleep(.5) 
             
 if __name__ == '__main__':
     lcdThread = threading.Thread(target=updateLCDInfo)
     lcdThread.start()
+    while True:
+        cmd = lcd.getData()
+        if cmd == 1:
+            spotify.prev()
+        elif cmd == 2:
+            spotify.play()
+        elif cmd == 3:
+            spotify.pause()
+        elif cmd == 4:
+            spotify.next()
+        time.sleep(.001)
     #data = s.recv(1024).decode()
     #print(data)
 #     while(1):

@@ -4,6 +4,7 @@ import digitalio
 import board
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, ImageOps
+from adafruit_stmpe610 import Adafruit_STMPE610_I2C
 import adafruit_rgb_display.ili9341 as ili9341
 
 class LCD:
@@ -23,6 +24,7 @@ class LCD:
             rst=reset_pin,
             baudrate=BAUDRATE,
         )
+        self.st = Adafruit_STMPE610_I2C(board.I2C())
         self.outlineColor = (30,30,30)
         self.bgColor = (50,50,50)
         self.textColor = (0,0,255)
@@ -45,6 +47,29 @@ class LCD:
         self.drawSongDetails()
         self.drawButtons()
         self.drawBar(0)
+
+    def getData(self):
+        cmd = 0
+        while not st.buffer_empty:
+            ts = st.touches
+            for point in ts:
+                # perform transformation to get into display coordinate system!
+                y = point["y"]
+                x = 4096 - point["x"]
+                x = 2 * x // 30
+                y = 8 * y // 90
+                print('x '+x)
+                print('y '+y)
+                if (y > 140 and y < 175):
+                    if (x > 45 and x < 85):
+                        cmd = 1
+                    elif (x > 110 and x < 150):
+                        cmd = 2
+                    elif (x > 170 and x < 210):
+                        cmd = 3
+                    elif (x > 235 and x < 275):
+                        cmd = 4
+        return cmd
 
     def drawAlbumArt(self):
         img = 0
