@@ -12,8 +12,8 @@ class Spotify:
         self.playlist_id = ""
         self.getPlaylist()
         self.setDevice()
-        
-    def setDevice():
+
+    def setDevice(self):
         query = "https://api.spotify.com/v1/me/player/devices"
         response = requests.get(
             query,
@@ -25,20 +25,70 @@ class Spotify:
         devices = response.json()["devices"]
         device = 0
         for i in devices:
-            print(devices[i]["name"][0:9])
-            if devices[i]["name"][0:9] == "raspotify":
-                device = devices[i]["name"]["id"]
+            if i["name"][0:9] == "raspotify":
+                device = i["id"]
+                break
         print(device)
         query = "https://api.spotify.com/v1/me/player/play"
-        request_body = json.dumps({"device_id": "{}".format(device)})
+        request_body = json.dumps({ "device_ids": ["{}".format(device)]})
+        #request_body = json.dumps({"device_ids": "[{}]".format(device)})
         response = requests.put(
             query,
             data=request_body,
             headers={
+                "Content-Type": "application/json",
                 "Authorization": "Bearer {}".format(self.spotify_token)
             }  
         )
-        print('complete')
+        print(response)
+
+    def getArt(self):
+        query = "https://api.spotify.com/v1/me/player/currently-playing"
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        variables = vars(response)
+        if(variables['status_code'] == 200):
+            return response.json()['item']['album']['images'][1]['url']
+        elif(variables['status_code'] == 204):
+            return False
+        
+    def getName(self):
+        query = "https://api.spotify.com/v1/me/player/currently-playing"
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        variables = vars(response)
+        if(variables['status_code'] == 200):
+            return response.json()['item']['name']
+        elif(variables['status_code'] == 204):
+            return False
+            
+    def getQueue(self):
+        query = "https://api.spotify.com/v1/playlists/{}/tracks".format(
+            self.playlist_id)
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        response_json = response.json()["items"]
+        queue = []
+        for i in response_json:
+            song = i["track"]["name"]
+            artist = i["track"]["artists"][0]["name"]
+            queue.append(song + "::" + artist)
+        return queue
         
     def getPlaylist(self):
         try:
@@ -54,7 +104,6 @@ class Spotify:
             exists = False
             for v in response:
                 if v["name"] == "Boombox Playlist":
-                    print('playlist exists and attached')
                     exists = True
                     self.playlist_uri= v["uri"]
                     self.playlist_id = v["uri"].split(':')[2]
@@ -64,7 +113,6 @@ class Spotify:
             self.create_playlist()
     
     def create_playlist(self):
-        print('creating new playlist')
         # Create a new playlist
         query = "https://api.spotify.com/v1/users/{}/playlists".format(spotify_user_id)
         
@@ -80,19 +128,15 @@ class Spotify:
         self.playlist_id = response_json["uri"].split(':')[2]
     
     def play_start(self):
-        print('play')
         query = "https://api.spotify.com/v1/me/player/play"
         request_body = json.dumps({"context_uri": "{}".format(self.playlist_uri)})
-        response = requests.put(
-            query,
-            data=request_body,
+        response = requests.put(query, data=request_body,
             headers={
                 "Authorization": "Bearer {}".format(self.spotify_token)
             }  
         )
         
     def play(self):
-        print('play')
         query = "https://api.spotify.com/v1/me/player/play"
         response = requests.put(
             query,
@@ -104,7 +148,6 @@ class Spotify:
         #print(response.json)
         
     def pause(self):
-        print('pausing')
         query = "https://api.spotify.com/v1/me/player/pause"
         request_body = json.dumps({"context_uri": "{}".format(self.playlist_uri)})
         response = requests.put(query, data=request_body,
@@ -209,8 +252,6 @@ class Spotify:
                 "Authorization": "Bearer {}".format(self.spotify_token)
             }
         )
-        #print("added song is " + song[0])
-        #print(response.json)
     
 
     def remove(self, song):
@@ -240,3 +281,23 @@ class Spotify:
             }
         )
         self.create_playlist()
+        
+        
+        
+        
+#     def find_location(self, firstline):
+#         target = 0
+#         song = self.get_txt_songs(firstline)
+#         curr = self.get_song_info()
+#         curr = curr['item']['uri']
+#         response_json = self.get_playlist_info()
+#        
+#         for index in range(len(response_json['items'])):
+#             all_song = response_json['items'][index]['track']['uri']
+#             if(song == all_song): target = index + 1
+#             if(curr == all_song): curr = index + 1
+#         
+#         output = str(target) + "/" + str(curr)
+#         return output
+        #return line 
+        # print(response.json())
