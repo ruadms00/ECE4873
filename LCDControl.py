@@ -11,7 +11,7 @@ import adafruit_rgb_display.ili9341 as ili9341
 class LCD:
 
     def __init__(self):
-        self.FONTSIZE = 18
+        self.FONTSIZE = 15
         cs_pin = digitalio.DigitalInOut(board.CE0)
         dc_pin = digitalio.DigitalInOut(board.D25)
         reset_pin = digitalio.DigitalInOut(board.D24)
@@ -41,9 +41,8 @@ class LCD:
         self.albumURL = ""
         self.songName = ""
         self.artist = ""
-        self.largeFont = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", self.FONTSIZE+6)
         self.medFont = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", self.FONTSIZE)
-        self.smallFont = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", self.FONTSIZE-6)
+        self.smallFont = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", self.FONTSIZE-3)
         self.drawBg()
         self.drawSongDetails()
         self.drawButtons()
@@ -113,8 +112,8 @@ class LCD:
         draw = ImageDraw.Draw(image)
         draw.rectangle((0,0,self.width,140),fill=0)
         draw.text(
-            (130, 60),
-            self.getSong(),
+            (130, 65),
+            self.getSong()[0:22],
             font=self.medFont,
             fill=self.textColor,
         )
