@@ -250,7 +250,7 @@ class LCD:
             fill=self.bgColor
         )
         draw.text(
-            (90, 121),
+            (98, 121),
             "SEE NETWORKS",
             font=self.medFont,
             fill=self.textColor
