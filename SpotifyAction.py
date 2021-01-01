@@ -1,22 +1,48 @@
 import requests
 import json
-from refresh import Refresh
-from secrets import spotify_token, spotify_user_id
 
 class Spotify:
 
-    def __init__(self):
-        self.spotify_token = Refresh().refresh()
-        self.user_id = spotify_user_id
+    def initializeVariables(self):
+        self.user_id = "hd8fm06nylo5mr53kgmustr5k"
         self.songAdded = False
         self.offset = 0
         self.playlist_uri = ""
         self.playlist_id = ""
         self.deviceId = ""
-        self.getPlaylist()
-        self.checkDevice()
-        self.play_start()
+        self.spotify_token = self.refresh()
+        if not self.spotify_token:
+            print('get token failed')
+            return False
+        if not self.getPlaylist():
+            print('get playlist failed')
+            return False
+        if not self.checkDevice():
+            print('check device failed')
+            return False
+        print('spotify initialized')
+        self.initialized = True
+        return True
+
     
+    def refresh(self):
+        query = "https://accounts.spotify.com/api/token"
+        try:
+            response = requests.post(query,
+                data={"grant_type": "refresh_token",
+                    "refresh_token": "AQAdC1X7A6ymncm1z-q6xH_SKdgWYwy3V053rHePbZbjSL04dKvALrb4AWRVIkg2UOEjOrmkpEpH0kP24MRWF65o3UHUm3K94-ZhzFeFS0gyYTQAWZJwljxnTij7-ncZTPg"},
+                headers={"Authorization": "Basic ODgzNjEwYWEwNDhmNDlmMDkwYmU5ODgzYWI3Y2YyNzE6NDdlNmUyZDE1ZTIzNDNlODgwYTQwNjllNTY0ZGI3M2I"})
+            response_json = response.json()
+            return response_json["access_token"]
+        except:
+            print(query)
+            print('exception reached')
+            return False
+
+
+    def __init__(self):
+        self.initialized = False
+        self.initializeVariables()
     
     def getReq(self,req):
         query = "https://api.spotify.com/" + req
@@ -26,7 +52,8 @@ class Spotify:
                 headers={
                     "Content-Type": "application/json",
                     "Authorization": "Bearer {}".format(self.spotify_token)
-                }
+                },
+                timeout=(1,3)
             )
             variables = vars(response)
             if(variables['status_code'] == 200):
@@ -49,8 +76,10 @@ class Spotify:
                 headers={
                     "Content-Type": "application/json",
                     "Authorization": "Bearer {}".format(self.spotify_token)
-                }  
+                },
+                timeout=(1,3)
             )
+            return True
         except:
             print(query)
             print('exception reached')
@@ -65,8 +94,10 @@ class Spotify:
                 headers={
                     "Content-Type": "application/json",
                     "Authorization": "Bearer {}".format(self.spotify_token)
-                }  
+                },
+                timeout=(1,3) 
             )
+            return True
         except:
             print(query)
             print(body)
@@ -82,8 +113,10 @@ class Spotify:
                 headers={
                     "Content-Type": "application/json",
                     "Authorization": "Bearer {}".format(self.spotify_token)
-                }  
+                },
+                timeout=(1,3)
             )
+            return True
         except:
             print(query)
             print('exception reached')
@@ -101,7 +134,9 @@ class Spotify:
                     if (not i["is_active"]):
                         self.offset = 0
                         self.play_start()
-                    break
+                    return True
+            return True
+        return False
 
     def getSongInfo(self):
         response = self.getReq("v1/me/player/currently-playing")
@@ -164,27 +199,26 @@ class Spotify:
         return queue
         
     def getPlaylist(self):
-        response = self.getReq("v1/users/{}/playlists".format(spotify_user_id))
+        response = self.getReq("v1/users/{}/playlists".format(self.user_id))
         if response:
             items = response["items"]
-            exists = False
             for v in items:
                 if v["name"] == "Boombox Playlist":
-                    exists = True
                     self.playlist_uri = v["uri"]
                     self.playlist_id = v["uri"].split(':')[2]
-            if not exists:
-                self.create_playlist()
+                    return True
+            return self.create_playlist()
         else:
-            self.create_playlist()
+            return self.create_playlist()
     
     def create_playlist(self):
         # Create a new playlist
         jsond = json.dumps({"name": "Boombox Playlist", "description": "Boombox Queue", "public": True})
-        response = self.postReq("v1/users/{}/playlists".format(spotify_user_id), jsond)
+        response = self.postReq("v1/users/{}/playlists".format(self.user_id), jsond)
         if response:
             self.playlist_uri = response_json["uri"]
             self.playlist_id = response_json["uri"].split(':')[2]
+            return True
         else:
             return False
     
@@ -193,7 +227,13 @@ class Spotify:
             "context_uri":"{}".format(self.playlist_uri),
             "offset":{"position":self.offset}
         })
-        response = self.putReq("v1/me/player/play?device_id={}".format(self.deviceId),jsond)
+        if self.deviceId != "":
+            response = self.putReq("v1/me/player/play?device_id={}".format(self.deviceId),jsond)
+        else:
+            response = self.putReq("v1/me/player/play")
+        if not response:
+            return False
+        return True
 
     def play(self):
         self.putReq("v1/me/player/play")
