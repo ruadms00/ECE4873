@@ -1,5 +1,6 @@
 import time
 import threading
+import socket
 from SpotifyAction import Spotify
 from LCDControl import LCD
 from wifi import Cell
@@ -11,6 +12,9 @@ wifiNetworks = []
 wifiOn = True
 
 spotify = Spotify()
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+secretsInitialized = False
 
 lcd = LCD()
 
@@ -101,11 +105,43 @@ def updateLCDInfo():
         elif lcd.Page == 2:
             drawPage2()
         time.sleep(.5) 
-            
+
+def initSecrets():
+    try:
+        s.connect(('76.17.103.152',50007))
+        print('connect')
+        data = 'recv:::'
+        s.sendall(data.encode())
+        string = s.recv(1024).decode()
+        args = string.split(':::')
+        s.close()
+        with open("secrets.txt", "w+") as file:
+            print('writing new data')
+            data = args[0] + '\n' + args[1]
+            file.write(data)
+            file.flush()
+            os.fsync(file.fileno())
+        print('initialized')
+        secretsInitialized = True
+    except:
+        try:
+            with open("secrets.txt", "r") as file:
+                print('file exists')
+                lines = file.readlines()
+                if len(lines) >= 2:
+                    secretsInitialized = True
+                    print('secrets present')
+                else:
+                    secretsInitialized = False
+        except:
+            secretsInitialized = False
+
 
 if __name__ == '__main__':
     lcdThread = threading.Thread(target=updateLCDInfo)
     lcdThread.start()
+    if wifiOn:
+        initSecrets()
     while True:
         cmd = lcd.getData()
         if cmd != 0:
@@ -156,5 +192,7 @@ if __name__ == '__main__':
             if not spotify.initialized and wifiOn:
                 spotify.initializeVariables()
                 time.sleep(.25)
+            if not spotify.initialized and wifiOn and not secretsInitialized:
+                initSecrets()
         time.sleep(.001)
     
