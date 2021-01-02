@@ -1,18 +1,26 @@
 import requests
 import json
+import os
 
 class Spotify:
 
     def initializeVariables(self):
-        self.user_id = "hd8fm06nylo5mr53kgmustr5k"
         self.songAdded = False
         self.offset = 0
         self.playlist_uri = ""
         self.playlist_id = ""
         self.deviceId = ""
-        self.spotify_token = self.refresh()
-        if not self.spotify_token:
+        self.user_id = ""
+        self.spotify_token = ""
+        self.refresh_token = ""
+        if not self.initializeTokens():
             print('get token failed')
+            return False
+        if not self.refreshTokens():
+            print('refresh token failed')
+            return False
+        if not self.getUser():
+            print('get user failed')
             return False
         if not self.getPlaylist():
             print('get playlist failed')
@@ -24,16 +32,72 @@ class Spotify:
         self.initialized = True
         return True
 
-    
-    def refresh(self):
+    def initializeTokens(self):
+        try:
+            with open("secrets.txt", "r") as file:
+                lines = file.readlines()
+                if len(lines) >= 2:
+                    self.spotify_token = lines[0]
+                    self.refresh_token = lines[1]
+                else:
+                    return False
+            return True
+        except:
+            return False
+
+    def updateTokens(self, access, refresh):
+        try:
+            with open("secrets.txt", "w+") as file:
+                data = access + '\n' + refresh
+                file.write(data)
+                file.flush()
+                os.fsync(file.fileno())
+                self.spotify_token = access
+                self.refresh_token = refresh
+            return True
+        except:
+            return False
+
+    def getTokens(self, code):
         query = "https://accounts.spotify.com/api/token"
         try:
-            response = requests.post(query,
-                data={"grant_type": "refresh_token",
-                    "refresh_token": "AQAdC1X7A6ymncm1z-q6xH_SKdgWYwy3V053rHePbZbjSL04dKvALrb4AWRVIkg2UOEjOrmkpEpH0kP24MRWF65o3UHUm3K94-ZhzFeFS0gyYTQAWZJwljxnTij7-ncZTPg"},
-                headers={"Authorization": "Basic ODgzNjEwYWEwNDhmNDlmMDkwYmU5ODgzYWI3Y2YyNzE6NDdlNmUyZDE1ZTIzNDNlODgwYTQwNjllNTY0ZGI3M2I"})
-            response_json = response.json()
-            return response_json["access_token"]
+            response = requests.post(
+                query,
+                data={"grant_type": "authorization_code",
+                    "code": code,
+                    "redirect_uri": "https://76.17.103.152/ControlSettings.php",
+                    "client_id": "712cfaf86d28475db28376353db9e381",
+                    "client_secret": "06450ee50aca4453b40fa82468bfaa0e"
+                },
+                timeout=(1,3)
+            )
+            return self.updateTokens(response.json()["access_token"], response.json()["refresh_token"])
+        
+        except:
+            print(query)
+            print('exception reached')
+            return False
+        
+    def refreshTokens(self):
+        query = "https://accounts.spotify.com/api/token"
+        try:
+            response = requests.post(
+                query,
+                data={
+                    "grant_type": "refresh_token",
+                    "refresh_token": self.refresh_token,
+                    "client_id": "712cfaf86d28475db28376353db9e381",
+                    "client_secret": "06450ee50aca4453b40fa82468bfaa0e"
+                },
+                timeout=(1,3)
+            )
+            refresh = self.refresh_token
+            try:
+                refresh = response.json()["refresh_token"]
+            except:
+                pass
+            return self.updateTokens(response.json()["access_token"], refresh)
+        
         except:
             print(query)
             print('exception reached')
@@ -116,7 +180,13 @@ class Spotify:
                 },
                 timeout=(1,3)
             )
-            return True
+            variables = vars(response)
+            if(variables['status_code'] == 200):
+                return response.json()
+            elif(variables['status_code'] == 204):
+                print(query)
+                print('status fail')
+                return False
         except:
             print(query)
             print('exception reached')
@@ -197,7 +267,15 @@ class Spotify:
             artist = i["track"]["artists"][0]["name"]
             queue.append(song + "::" + artist)
         return queue
-        
+          
+    def getUser(self):
+        response = self.getReq("v1/me")
+        if response:
+            self.user_id = response["id"]
+            return True
+        else:
+            return False
+    
     def getPlaylist(self):
         response = self.getReq("v1/users/{}/playlists".format(self.user_id))
         if response:
@@ -215,12 +293,12 @@ class Spotify:
         # Create a new playlist
         jsond = json.dumps({"name": "Boombox Playlist", "description": "Boombox Queue", "public": True})
         response = self.postReq("v1/users/{}/playlists".format(self.user_id), jsond)
+        print(response)
         if response:
-            self.playlist_uri = response_json["uri"]
-            self.playlist_id = response_json["uri"].split(':')[2]
+            self.playlist_uri = response["uri"]
+            self.playlist_id = self.playlist_uri.split(':')[2]
             return True
-        else:
-            return False
+        return False
     
     def play_start(self):
         jsond = json.dumps({
