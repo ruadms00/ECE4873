@@ -1,6 +1,7 @@
 import time
 import threading
 import socket
+import os
 from SpotifyAction import Spotify
 from LCDControl import LCD
 from wifi import Cell
@@ -14,6 +15,7 @@ wifiOn = True
 spotify = Spotify()
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.settimeout(3)
 secretsInitialized = False
 
 lcd = LCD()
@@ -109,28 +111,26 @@ def updateLCDInfo():
 def initSecrets():
     try:
         s.connect(('76.17.103.152',50007))
-        print('connect')
-        data = 'recv:::'
+        data = 'req:::'
         s.sendall(data.encode())
         string = s.recv(1024).decode()
         args = string.split(':::')
-        s.close()
-        with open("secrets.txt", "w+") as file:
-            print('writing new data')
-            data = args[0] + '\n' + args[1]
-            file.write(data)
-            file.flush()
-            os.fsync(file.fileno())
-        print('initialized')
-        secretsInitialized = True
+        if len(args) >= 2:
+            s.close()
+            secretsInitialized = True
+            with open("secrets.txt", "w+") as file:
+                data = args[0] + '\n' + args[1]
+                file.write(data)
+                file.flush()
+                os.fsync(file.fileno())
+            secretsInitialized = True
+        secretsInitialized = False
     except:
         try:
             with open("secrets.txt", "r") as file:
-                print('file exists')
                 lines = file.readlines()
                 if len(lines) >= 2:
                     secretsInitialized = True
-                    print('secrets present')
                 else:
                     secretsInitialized = False
         except:

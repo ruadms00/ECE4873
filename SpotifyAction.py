@@ -35,8 +35,10 @@ class Spotify:
     def initializeTokens(self):
         try:
             with open("secrets.txt", "r") as file:
+                print('read')
                 lines = file.readlines()
                 if len(lines) >= 2:
+                    print('enough lines')
                     self.spotify_token = lines[0]
                     self.refresh_token = lines[1]
                 else:
@@ -120,11 +122,21 @@ class Spotify:
                 timeout=(1,3)
             )
             variables = vars(response)
-            if(variables['status_code'] == 200):
+            if variables['status_code'] == 200:
                 return response.json()
-            elif(variables['status_code'] == 204):
+            elif variables['status_code'] == 204:
                 print(query)
                 print('status fail')
+                return False
+            elif variables['status_code'] == 401:
+                success = self.refreshTokens()
+                if success:
+                    print('tokens failed, updated')
+                else:
+                    print('tokens failed, not updated')
+                return False
+            else:
+                print(variables['status_code'])
                 return False
         except:
             print(query)
@@ -181,12 +193,18 @@ class Spotify:
                 timeout=(1,3)
             )
             variables = vars(response)
-            if(variables['status_code'] == 200):
+            if variables['status_code'] == 200:
                 return response.json()
-            elif(variables['status_code'] == 204):
+            elif variables['status_code'] == 204:
                 print(query)
                 print('status fail')
                 return False
+            elif variables['status_code'] == 403:
+                success = self.refreshTokens()
+                if success:
+                    print('tokens failed, updated')
+                else:
+                    print('tokens failed, not updated')
         except:
             print(query)
             print('exception reached')
