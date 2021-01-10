@@ -1,0 +1,14 @@
+[Unit]
+Description=Boombox
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 -u create_playlist.py
+WorkingDirectory=/home/pi/Desktop/Spotify/ECE4873
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

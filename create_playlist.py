@@ -2,6 +2,7 @@ import time
 import threading
 import socket
 import os
+import subprocess
 from SpotifyAction import Spotify
 from LCDControl import LCD
 from wifi import Cell
@@ -10,6 +11,8 @@ import urllib
 mutex = False
 
 wifiNetworks = []
+hideNetworks = []
+
 wifiOn = True
 
 spotify = Spotify()
@@ -56,8 +59,10 @@ def drawPage2():
     try:
         cells = Cell.all('wlan0')
         for cell in cells:
-            if not cell.ssid in newNetworks:
+            if not cell.ssid in newNetworks and not cell.ssid in hideNetworks:
                 newNetworks.append(cell.ssid)
+            if len(newNetworks) >= 7:
+                break
         if set(newNetworks) == set(wifiNetworks):
             return
         wifiNetworks = newNetworks[:]
@@ -108,6 +113,23 @@ def updateLCDInfo():
             drawPage2()
         time.sleep(.5) 
 
+def updateUserInfo(user, pw):
+    file = open("/etc/default/raspotify", "r")
+    contents = file.readlines()
+    file.close()
+    try:
+        index = [idx for idx, s in enumerate(contents) if "OPTIONS=" in s][0]
+        contents[index] = "OPTIONS=\"--username {} --password {} --device hw:1,0\"\n".format(user, pw)
+        file2 = open("/etc/default/raspotify", "w")
+        data = "".join(contents)
+        file2.write(data)
+        file2.flush()
+        os.fsync(file2.fileno())
+        file2.close()
+        subprocess.call('sudo systemctl restart raspotify', shell=True)
+    except:
+        print('update info failed')
+        
 def initSecrets():
     try:
         s.connect(('76.17.103.152',50007))
@@ -180,12 +202,33 @@ if __name__ == '__main__':
                     else:
                         lcd.updatePage(1)
                     mutex = False
-                elif cmd <= len(wifiNetworks):
-                    lcd.networkSelected = wifiNetworks[cmd-1]
+                elif cmd == 8:
                     while mutex:
                         time.sleep(.001)
                     mutex = True
                     lcd.updatePage(3)
+                    user = spotify.user_id
+                    lcd.drawPasswordPage(user, False)
+                    pw = lcd.getPassword(user, False)
+                    if type(pw) == str:
+                        updateUserInfo(user, pw)
+                    lcd.updatePage(0)
+                    mutex = False
+                elif cmd <= len(wifiNetworks):
+                    while mutex:
+                        time.sleep(.001)
+                    mutex = True
+                    lcd.updatePage(3)
+                    inText = wifiNetworks[cmd-1]
+                    lcd.drawPasswordPage(inText)
+                    pw = lcd.getPassword(inText)
+                    if type(pw) == str:
+                        lcd.updateWifi(inText, pw)
+                    elif pw == 1:
+                        hideNetworks.append(inText)
+                    elif pw == 2:
+                        lcd.removeWifi(inText)
+                    lcd.updatePage(0)
                     mutex = False
             time.sleep(1)
         else:

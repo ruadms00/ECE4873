@@ -40,15 +40,12 @@ class LCD:
         self.barHeight = 4
         self.barWidth = 280
         self.songlength = 0
-        self.upperCase = False
-        self.secondKey = False
         self.charList = "1234567890qwertyuiopasdfghjklzxcvbnm"
         self.secondList = "1234!@#$%^&*()-_=+[]{}\|/;:\'\",.<>?`~"
         self.passText = ""
         self.albumURL = ""
         self.songName = ""
         self.artist = ""
-        self.networkSelected = ""
         self.medFont = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", self.FONTSIZE)
         self.smallFont = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", self.FONTSIZE-3)
         self.drawStartup()
@@ -60,9 +57,49 @@ class LCD:
         except:
             print('clear data failed')
 
-    def getKeyboardInput(self, x, y):
+    def getPassword(self, inText, buttons = True):
+        upperCase = False
+        secondKey = False
+        passText = ""                                                                                                     
+        self.Page = 3
+        while True:
+            cmd = self.getData(secondKey)
+            if type(cmd) == str:
+                if upperCase:
+                    cmd = cmd.upper()
+                passText += cmd
+                self.updatePassword(passText)
+            elif cmd == 1:
+                return 0
+            elif cmd == 2:
+                upperCase = not upperCase
+                self.drawShift(upperCase)
+            elif cmd == 3:
+                passText = passText[:-1]
+                self.updatePassword(passText)
+            elif cmd == 4:
+                secondKey = not secondKey
+                self.drawKeyboard(secondKey, upperCase)
+            elif cmd == 5:
+                return passText
+            elif cmd == 6:
+                passText += ' '
+                self.updatePassword(passText)
+            elif cmd == 7:
+                passText = ""
+                self.updatePassword(passText)
+            elif cmd == 8 and buttons:
+                return 1
+            elif cmd == 9 and buttons:
+                return 2
+            if cmd != 0:
+                time.sleep(.15)
+            time.sleep(.001)
+        return passText
+    
+    def getKeyboardInput(self, x, y, secondKey):
         chars = self.charList
-        if self.secondKey:
+        if secondKey:
             chars = self.secondList
         if y > 190 and y < 216 and x < 80:
             return 2
@@ -86,7 +123,7 @@ class LCD:
             return chars[((x-111)//31+1)+29]
         return 0
     
-    def getData(self):
+    def getData(self, secondKey = False):
         self.clearData()
         time.sleep(.01)
         if self.st.touched:
@@ -102,45 +139,53 @@ class LCD:
                     y = x1
                     #print('x ' + str(x) + '    y ' + str(y))
                     if self.Page == 0:
-                        if (y > 150 and y < 190):
-                            if (x > 70 and x < 115):
+                        if y > 150 and y < 190:
+                            if x > 70 and x < 115:
                                 return 1
-                            elif (x > 140 and x < 185):
+                            elif x > 140 and x < 185:
                                 return 2
-                            elif (x > 210 and x < 250):
+                            elif x > 210 and x < 250:
                                 return 3
-                            elif (x > 270 and x < 310):
+                            elif x > 270 and x < 310:
                                 return 4
-                        if (y < 55 and x > 275):
+                        if y < 55 and x > 275:
                             return 5
                     elif self.Page == 1:
-                        if (x > 80 and x < 240 and y > 120 and y < 160):
+                        if x > 80 and x < 240 and y > 120 and y < 160:
                             return 1
                     elif self.Page == 2:
-                        if (y < 55 and x > 275):
+                        if y < 55 and x > 275:
                             return 11
+                        elif y > 215 and x < 190:
+                            return 8
                         elif y > 45 and x < 330:
-                            return ((y-40)//35)+5*(x//185)
+                            return 2*((y-75)//35)+(x//190)+1
                     elif self.Page == 3:
-                        if (y < 55 and x > 275):
+                        if y < 55 and x > 275:
                             return 1
+                        elif y < 80 and y > 55 and x > 265:
+                            return 8
+                        elif y < 105 and y > 80 and x > 265:
+                            return 9
                         else:
-                            return self.getKeyboardInput(x, y)
+                            return self.getKeyboardInput(x, y, secondKey)
         return 0
     
-    def updateWifi(self):
-        if self.networkSelected == "":
+    def updateUserInfo(self, password):
+        return 0
+    
+    def updateWifi(self, network, password):
+        if network == "":
             return 0
-        testNet = "\"" + self.networkSelected + "\""
-        update = False
+        testNet = "\"" + network + "\""
         file = open("/etc/wpa_supplicant/wpa_supplicant.conf", "r")
         contents = file.readlines()
         file.close()
         try:
             index = [idx for idx, s in enumerate(contents) if testNet in s][0]
-            if not "\"" + self.passText + "\"" in contents[index+1]:
+            if not "\"" + password + "\"" in contents[index+1]:
                 print('update')
-                contents[index+1] = '\tpsk="{}"\n'.format(self.passText)
+                contents[index+1] = '\tpsk="{}"\n'.format(password)
                 file2 = open("/etc/wpa_supplicant/wpa_supplicant.conf", "w")
                 data = "".join(contents)
                 file2.write(data)
@@ -158,8 +203,8 @@ class LCD:
             config_lines = [
                 '\n',
                 'network={',
-                '\tssid="{}"'.format(self.networkSelected),
-                '\tpsk="{}"'.format(self.passText),
+                '\tssid="{}"'.format(network),
+                '\tpsk="{}"'.format(password),
                 '\tkey_mgmt=WPA-PSK',
                 '}'
             ]
@@ -167,9 +212,26 @@ class LCD:
                 file3.write("%s\n" % item)
             file3.flush()
             os.fsync(file3.fileno())
-            
-            #config = '\n'.join(config_lines)
-            #file3.write(config)
+        return 2
+    
+    def removeWifi(self, network):
+        if network == "":
+            return 0
+        testNet = "\"" + network + "\""
+        file = open("/etc/wpa_supplicant/wpa_supplicant.conf", "r")
+        contents = file.readlines()
+        file.close()
+        try:
+            index = [idx for idx, s in enumerate(contents) if testNet in s][0]
+            del contents[index-2:index+4]
+            file2 = open("/etc/wpa_supplicant/wpa_supplicant.conf", "w")
+            data = "".join(contents)
+            file2.write(data)
+            file2.flush()
+            os.fsync(file2.fileno())
+            file2.close()
+        except:
+            return 1
         return 2
         
     def updatePage(self, newPage):
@@ -185,50 +247,7 @@ class LCD:
         elif newPage == 3:
             self.clearLcd()
             self.drawConfig()
-            self.drawNetworkSelector()
-            while True:
-                cmd = self.getData()
-                if type(cmd) == str:
-                    if self.upperCase:
-                        cmd = cmd.upper()
-                    self.passText += cmd
-                    self.updatePassword()
-                elif cmd == 1:
-                    self.Page = 0
-                    self.upperCase = False
-                    self.secondKey = False
-                    self.passText = ""
-                    self.drawStartup()
-                    break
-                elif cmd == 2:
-                    self.upperCase = not self.upperCase
-                    self.drawShift()
-                elif cmd == 3:
-                    self.passText = self.passText[:-1]
-                    self.updatePassword()
-                elif cmd == 4:
-                    self.secondKey = not self.secondKey
-                    self.drawKeyboard()
-                elif cmd == 5:
-                    self.updateWifi()
-                    self.Page = 0
-                    self.upperCase = False
-                    self.secondKey = False
-                    self.passText = ""
-                    self.drawStartup()
-                    break
-                    #enter button
-                    #update wpa_supplicant.conf (for testing, just update a test file)
-                elif cmd == 6:
-                    self.passText += ' '
-                    self.updatePassword()
-                elif cmd == 7:
-                    self.passText = ""
-                    self.updatePassword()
-                if cmd != 0:
-                    time.sleep(.15)
-                time.sleep(.001)
-    
+            
     def drawStartup(self):
         self.clearLcd()
         self.drawConfig()
@@ -261,29 +280,39 @@ class LCD:
         img = Image.new("RGB", (self.width, self.height-40))
         draw = ImageDraw.Draw(img)
         draw.text(
-            (70, 0),
+            (120, 0),
             "WiFi Selection",
             font=self.medFont,
             fill=self.textColor
         )
         for i, net in enumerate(networks):
-            if i < 10:
+            if i < 6:
                 draw.rectangle(
-                    (10+(i//5)*160, 20+35*(i%5), 150+(i//5)*160, 50+35*(i%5)),
+                    (10+(i%2)*160, 20+35*(i//2), 150+(i%2)*160, 50+35*(i//2)),
                     fill=self.bgColor
                 )
                 draw.text(
-                    (15+(i//5)*160, 24+35*(i%5)),
-                    net,
+                    (15+(i%2)*160, 28+35*(i//2)),
+                    net[:14],
                     font=self.smallFont,
                     fill=self.textColor
                 )
+        draw.rectangle(
+            (10, 160, 150, 190),
+            fill=self.bgColor
+        )
+        draw.text(
+            (23, 168),
+            "SPOTIFY CONNECT",
+            font=self.smallFont,
+            fill=self.textColor
+        )
         self.disp.image(img, None, 40, 0)
     
-    def drawShift(self):
+    def drawShift(self, upperCase):
         img = Image.new("RGB", (42, 22))
         draw = ImageDraw.Draw(img)
-        if self.upperCase:
+        if upperCase:
             draw.rectangle(
                 (0, 0, 42, 22),
                 fill=self.textColor
@@ -307,24 +336,24 @@ class LCD:
             )
         self.disp.image(img, None, 173, 271)
     
-    def drawKeyboard(self):
-        img = Image.new("RGB", (self.width, self.height-80))
+    def drawKeyboard(self, secondKey, upperCase):
+        img = Image.new("RGB", (self.width, self.height-95))
         draw = ImageDraw.Draw(img)
         chars = self.charList
-        if self.secondKey:
+        if secondKey:
             chars = self.secondList
         for idx, letter in enumerate(chars):
             x = 0
             y = 0
             if idx < 20:
                 x = 7 + (idx%10)*31
-                y = 15 + (idx//10)*26
+                y = 0 + (idx//10)*26
             elif idx < 29:
                 x = 22 + (idx%10)*31
-                y = 15 + (idx//10)*26
+                y = 0 + (idx//10)*26
             else:
                 x = 53 + ((idx+1)%10)*31
-                y = 15 + ((idx+1)//10)*26
+                y = 0 + ((idx+1)//10)*26
             draw.rectangle(
                 (x, y, x + 27, y + 22),
                 fill=self.bgColor
@@ -336,88 +365,137 @@ class LCD:
                 fill=self.textColor
             )
         draw.rectangle(
-            (270, 93, 313, 115),
+            (270, 78, 313, 100),
             fill=self.bgColor
         )
         draw.text(
-            (273, 96),
+            (273, 81),
             "bksp",
             font=self.medFont,
             fill=self.textColor
         )
         draw.rectangle(
-            (84, 119, 173, 141),
+            (84, 104, 173, 126),
             fill=self.bgColor
         )
         draw.rectangle(
-            (239, 119, 313, 141),
+            (239, 104, 313, 126),
             fill=self.bgColor
         )
         draw.text(
-            (250, 122),
+            (250, 107),
             "submit",
             font=self.medFont,
             fill=self.textColor
         )
-        if self.secondKey:
+        if secondKey:
             draw.rectangle(
-                (7, 119, 80, 141),
+                (7, 104, 80, 126),
                 fill=self.textColor
             )
             draw.text(
-                (29, 122),
+                (29, 107),
                 "!#1",
                 font=self.medFont,
                 fill=self.bgColor
             )
         else:
             draw.rectangle(
-                (7, 119, 80, 141),
+                (7, 104, 80, 126),
                 fill=self.bgColor
             )
             draw.text(
-                (29, 122),
+                (29, 107),
                 "!#1",
                 font=self.medFont,
                 fill=self.textColor
             )
+        if upperCase:
+            draw.rectangle(
+                (7, 78, 49, 100),
+                fill=self.textColor
+            )
+            draw.text(
+                (12, 81),
+                "shift",
+                font=self.medFont,
+                fill=self.bgColor
+            )
+        else:
+            draw.rectangle(
+                (7, 78, 49, 100),
+                fill=self.bgColor
+            )
+            draw.text(
+                (12, 81),
+                "shift",
+                font=self.medFont,
+                fill=self.textColor
+            )
         draw.rectangle(
-            (177, 119, 235, 141),
+            (177, 104, 235, 126),
             fill=self.bgColor
         )
         draw.text(
-            (188, 122),
+            (188, 107),
             "clear",
             font=self.medFont,
             fill=self.textColor
         )
-        self.disp.image(img, None, 80, 0)
-        self.drawShift()
+        self.disp.image(img, None, 95, 0)
                 
                 
-    def updatePassword(self):
-        img = Image.new("RGB", (self.width, 25))
+    def updatePassword(self, passText):
+        img = Image.new("RGB", (self.width-80, 25))
         draw = ImageDraw.Draw(img)
         draw.text(
             (10, 0),
-            "Password: {}".format(self.passText),
+            "Password: {}".format(passText[-12:]),
             font=self.medFont,
             fill=self.textColor
         )
-        self.disp.image(img, None, 60, 0)
+        self.disp.image(img, None, 60, 80)
     
-    def drawNetworkSelector(self):
+    def drawPasswordPage(self, network, buttons = True):
         img = Image.new("RGB", (self.width, self.height-40))
         draw = ImageDraw.Draw(img)
-        draw.text(
-            (10, 0),
-            "Connect To: {}".format(self.networkSelected),
-            font=self.medFont,
-            fill=self.textColor
-        )
+        if buttons:
+            draw.text(
+                (10, 0),
+                "Connect To: {}".format(network),
+                font=self.medFont,
+                fill=self.textColor
+            )
+            draw.rectangle(
+                (240, 5, 310, 25),
+                fill=self.bgColor
+            )
+            draw.text(
+                (262, 8),
+                "HIDE",
+                font=self.smallFont,
+                fill=self.textColor
+            ) 
+            draw.rectangle(
+                (240, 30, 310, 50),
+                fill=self.bgColor
+            )
+            draw.text(
+                (250, 33),
+                "FORGET",
+                font=self.smallFont,
+                fill=self.textColor
+            )
+        else:
+            draw.text(
+                (10, 0),
+                "Username: {}".format(network),
+                font=self.medFont,
+                fill=self.textColor
+            )
         self.disp.image(img, None, 40, 0)
-        self.updatePassword()
-        self.drawKeyboard()
+        self.drawKeyboard(False, False)
+        self.updatePassword("")
     
     def drawAlbumArt(self):
         img = 0

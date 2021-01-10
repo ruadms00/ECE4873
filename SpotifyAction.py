@@ -93,13 +93,19 @@ class Spotify:
                 },
                 timeout=(1,3)
             )
-            refresh = self.refresh_token
-            try:
-                refresh = response.json()["refresh_token"]
-            except:
-                pass
-            return self.updateTokens(response.json()["access_token"], refresh)
-        
+            variables = vars(response)
+            if variables['status_code'] == 401:
+                spotify.initialized = False
+                return False
+            elif variables['status_code'] == 200 or variables['status_code'] == 204:
+                refresh = self.refresh_token
+                try:
+                    refresh = response.json()["refresh_token"]
+                except:
+                    pass
+                return self.updateTokens(response.json()["access_token"], refresh)
+            else:
+                return False
         except:
             print(query)
             print('exception reached')
@@ -125,8 +131,6 @@ class Spotify:
             if variables['status_code'] == 200:
                 return response.json()
             elif variables['status_code'] == 204:
-                print(query)
-                print('status fail')
                 return False
             elif variables['status_code'] == 401:
                 success = self.refreshTokens()
@@ -196,10 +200,8 @@ class Spotify:
             if variables['status_code'] == 200:
                 return response.json()
             elif variables['status_code'] == 204:
-                print(query)
-                print('status fail')
                 return False
-            elif variables['status_code'] == 403:
+            elif variables['status_code'] == 401:
                 success = self.refreshTokens()
                 if success:
                     print('tokens failed, updated')
@@ -221,7 +223,6 @@ class Spotify:
                     self.deviceId = device
                     if (not i["is_active"]):
                         self.offset = 0
-                        self.play_start()
                     return True
             return True
         return False
