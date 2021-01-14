@@ -332,6 +332,9 @@ class Spotify:
             return False
         return True
 
+    def updatePosition(self, newPos):
+        self.putReq("v1/me/player/seek?position_ms={}".format(newPos))
+
     def play(self):
         self.putReq("v1/me/player/play")
         

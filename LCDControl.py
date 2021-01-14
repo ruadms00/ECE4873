@@ -42,7 +42,6 @@ class LCD:
         self.songlength = 0
         self.charList = "1234567890qwertyuiopasdfghjklzxcvbnm"
         self.secondList = "1234!@#$%^&*()-_=+[]{}\|/;:\'\",.<>?`~"
-        self.passText = ""
         self.albumURL = ""
         self.songName = ""
         self.artist = ""
@@ -148,8 +147,10 @@ class LCD:
                                 return 3
                             elif x > 270 and x < 310:
                                 return 4
-                        if y < 55 and x > 275:
+                        elif y < 55 and x > 275:
                             return 5
+                        elif y > 190 and y < 220 and x > 50 and x < 330:
+                            return x
                     elif self.Page == 1:
                         if x > 80 and x < 240 and y > 120 and y < 160:
                             return 1
@@ -174,66 +175,6 @@ class LCD:
     def updateUserInfo(self, password):
         return 0
     
-    def updateWifi(self, network, password):
-        if network == "":
-            return 0
-        testNet = "\"" + network + "\""
-        file = open("/etc/wpa_supplicant/wpa_supplicant.conf", "r")
-        contents = file.readlines()
-        file.close()
-        try:
-            index = [idx for idx, s in enumerate(contents) if testNet in s][0]
-            if not "\"" + password + "\"" in contents[index+1]:
-                print('update')
-                contents[index+1] = '\tpsk="{}"\n'.format(password)
-                file2 = open("/etc/wpa_supplicant/wpa_supplicant.conf", "w")
-                data = "".join(contents)
-                file2.write(data)
-                file2.flush()
-                os.fsync(file2.fileno())
-                file2.close()
-                return 1
-            else:
-                print('already in file')
-                return 0
-        except:
-            print('not in file')
-        print('adding new wpa')
-        with open("/etc/wpa_supplicant/wpa_supplicant.conf", "a+") as file3:
-            config_lines = [
-                '\n',
-                'network={',
-                '\tssid="{}"'.format(network),
-                '\tpsk="{}"'.format(password),
-                '\tkey_mgmt=WPA-PSK',
-                '}'
-            ]
-            for item in config_lines:
-                file3.write("%s\n" % item)
-            file3.flush()
-            os.fsync(file3.fileno())
-        return 2
-    
-    def removeWifi(self, network):
-        if network == "":
-            return 0
-        testNet = "\"" + network + "\""
-        file = open("/etc/wpa_supplicant/wpa_supplicant.conf", "r")
-        contents = file.readlines()
-        file.close()
-        try:
-            index = [idx for idx, s in enumerate(contents) if testNet in s][0]
-            del contents[index-2:index+4]
-            file2 = open("/etc/wpa_supplicant/wpa_supplicant.conf", "w")
-            data = "".join(contents)
-            file2.write(data)
-            file2.flush()
-            os.fsync(file2.fileno())
-            file2.close()
-        except:
-            return 1
-        return 2
-        
     def updatePage(self, newPage):
         self.Page = newPage
         if newPage == 0:

@@ -1,9 +1,8 @@
 import time
 import threading
 import socket
-import os
-import subprocess
 from SpotifyAction import Spotify
+from FileManager import File
 from LCDControl import LCD
 from wifi import Cell
 import urllib
@@ -16,6 +15,7 @@ hideNetworks = []
 wifiOn = True
 
 spotify = Spotify()
+file = File()
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.settimeout(3)
@@ -113,22 +113,6 @@ def updateLCDInfo():
             drawPage2()
         time.sleep(.5) 
 
-def updateUserInfo(user, pw):
-    file = open("/etc/default/raspotify", "r")
-    contents = file.readlines()
-    file.close()
-    try:
-        index = [idx for idx, s in enumerate(contents) if "OPTIONS=" in s][0]
-        contents[index] = "OPTIONS=\"--username {} --password {} --device hw:1,0\"\n".format(user, pw)
-        file2 = open("/etc/default/raspotify", "w")
-        data = "".join(contents)
-        file2.write(data)
-        file2.flush()
-        os.fsync(file2.fileno())
-        file2.close()
-        subprocess.call('sudo systemctl restart raspotify', shell=True)
-    except:
-        print('update info failed')
         
 def initSecrets():
     try:
@@ -139,24 +123,9 @@ def initSecrets():
         args = string.split(':::')
         if len(args) >= 2:
             s.close()
-            secretsInitialized = True
-            with open("secrets.txt", "w+") as file:
-                data = args[0] + '\n' + args[1]
-                file.write(data)
-                file.flush()
-                os.fsync(file.fileno())
-            secretsInitialized = True
-        secretsInitialized = False
+            secretsInitialized = file.writeSecrets(args[0], args[1])
     except:
-        try:
-            with open("secrets.txt", "r") as file:
-                lines = file.readlines()
-                if len(lines) >= 2:
-                    secretsInitialized = True
-                else:
-                    secretsInitialized = False
-        except:
-            secretsInitialized = False
+        secretsInitialized = file.checkSecrets()
 
 
 if __name__ == '__main__':
@@ -184,6 +153,11 @@ if __name__ == '__main__':
                         wifiNetworks = []
                         lcd.updatePage(2)
                         mutex = False
+                    elif cmd > 50:
+                        print(cmd)
+                        pos = int((cmd - 50) / 280 * lcd.songLength * 1000)
+                        print(pos)
+                        spotify.updatePosition(pos)
             elif lcd.Page == 1:
                 if cmd == 1:
                     while mutex:
@@ -211,7 +185,7 @@ if __name__ == '__main__':
                     lcd.drawPasswordPage(user, False)
                     pw = lcd.getPassword(user, False)
                     if type(pw) == str:
-                        updateUserInfo(user, pw)
+                        file.updateUserInfo(user, pw)
                     lcd.updatePage(0)
                     mutex = False
                 elif cmd <= len(wifiNetworks):
@@ -223,11 +197,11 @@ if __name__ == '__main__':
                     lcd.drawPasswordPage(inText)
                     pw = lcd.getPassword(inText)
                     if type(pw) == str:
-                        lcd.updateWifi(inText, pw)
+                        file.updateWifi(inText, pw)
                     elif pw == 1:
                         hideNetworks.append(inText)
                     elif pw == 2:
-                        lcd.removeWifi(inText)
+                        file.removeWifi(inText)
                     lcd.updatePage(0)
                     mutex = False
             time.sleep(1)
